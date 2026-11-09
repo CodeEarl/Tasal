@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sourcing Brief AI | Intelligent Talent Sourcing Strategies</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- jsPDF for clean PDF report download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    @keyframes pulseProgress {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .stepper-active {
+      animation: pulseProgress 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
+
+  <!-- Main Container -->
+  <div class="min-h-full flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="showInputView()">
+          <div class="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+            <i data-lucide="crosshair" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+              Sourcing Brief <span class="text-indigo-600 dark:text-indigo-400">AI</span>
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Turn messy hiring briefs into actionable sourcing strategies</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- API Configuration Trigger -->
+          <button id="apiConfigBtn" onclick="toggleApiModal(true)" title="Configure Gemini API Key or Backend URL" 
+                  class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i data-lucide="key" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button id="themeToggleBtn" onclick="toggleDarkMode()" title="Toggle Dark/Light Mode"
+                  class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i id="themeIcon" data-lucide="moon" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- ================= 1. INPUT VIEW ================= -->
+      <section id="inputSection" class="max-w-4xl mx-auto space-y-6">
+        
+        <div class="text-center space-y-2 mb-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Senior Talent Sourcing Copilot
+          </div>
+          <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+            Interpret founder briefs with sourcer judgment.
+          </h2>
+          <p class="text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            Paste raw Slack messages, call notes, or unstructured hiring requirements. The AI uncovers hidden trade-offs, separates must-haves, maps companies, and writes production-ready Boolean strings.
+          </p>
+        </div>
+
+        <!-- Sample Brief Pills -->
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Load a sample founder brief:
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="loadSample('eng')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+              Engineering (Unicorn Startup)
+            </button>
+            <button onclick="loadSample('mkt')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+              Growth Marketing (B2B SaaS)
+            </button>
+            <button onclick="loadSample('prod')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+              Product Management (AI Seed)
+            </button>
+            <button onclick="loadSample('sales')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+              Enterprise Sales (High Quota)
+            </button>
+            <button onclick="loadSample('ops')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+              Head of Ops & Finance (Multi-hat)
+            </button>
+          </div>
+        </div>
+
+        <!-- Hiring Brief Input Form -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-6">
+          <label for="briefInput" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Founder's Hiring Brief / Conversation Notes
+          </label>
+          <div class="relative">
+            <textarea id="briefInput" rows="9" 
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-4 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm leading-relaxed resize-y font-mono"
+              placeholder="Paste unstructured notes, requirements, or Slack snippets here...&#10;&#10;e.g. 'We need a senior full-stack engineer, someone who has built products from scratch, preferably at a startup. They should be really good at frontend and backend, understand DevOps, have experience in fintech...'"></textarea>
+          </div>
+
+          <!-- Character & Word Counts + Action -->
+          <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+            <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center space-x-3">
+              <span id="wordCount">0 words</span>
+              <span>&bull;</span>
+              <span id="charCount">0 characters</span>
+              <span id="validationWarning" class="text-amber-600 dark:text-amber-400 font-medium hidden">
+                (Provide at least 35 characters)
+              </span>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <button onclick="clearInput()" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                Clear Text
+              </button>
+              <button id="analyzeBtn" onclick="startAnalysis()" 
+                class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 transition active:scale-95 disabled:opacity-50">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>Analyse Hiring Brief</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= 2. LOADING STATE ================= -->
+      <section id="loadingSection" class="hidden max-w-2xl mx-auto py-16 text-center space-y-8">
+        <div class="inline-flex p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 shadow-sm animate-bounce">
+          <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white" id="loadingStageTitle">
+            Analysing hiring brief...
+          </h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400" id="loadingStageDescription">
+            Extracting core requirements and identifying unstated assumptions.
+          </p>
+        </div>
+
+        <!-- Recruitment Stepper Indicator -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-left space-y-3.5 shadow-sm max-w-md mx-auto">
+          <div id="step1" class="flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-medium stepper-active">
+            <span class="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-[10px] font-bold">1</span>
+            <span>Understanding hiring requirements & implicit intent...</span>
+          </div>
+          <div id="step2" class="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-600 font-medium">
+            <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">2</span>
+            <span>Separating must-haves from nice-to-haves...</span>
+          </div>
+          <div id="step3" class="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-600 font-medium">
+            <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">3</span>
+            <span>Scanning for conflicts, red flags & trade-offs...</span>
+          </div>
+          <div id="step4" class="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-600 font-medium">
+            <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">4</span>
+            <span>Mapping talent pools & writing Boolean queries...</span>
+          </div>
+          <div id="step5" class="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-600 font-medium">
+            <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">5</span>
+            <span>Synthesising kickoff consultation questions...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. RESULTS DASHBOARD ================= -->
+      <section id="resultsSection" class="hidden space-y-8 pb-16">
+        
+        <!-- Action Toolbar -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div class="flex items-center space-x-3">
+            <button onclick="showInputView()" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Brief
+            </button>
+            <button onclick="openOriginalBriefModal()" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i> View Original Brief
+            </button>
+          </div>
+
+          <div class="flex items-center flex-wrap gap-2">
+            <button onclick="openRegenerateModal()" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refine / Regenerate
+            </button>
+            <button onclick="copyAllAnalysis()" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-900 transition shadow-sm">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Sourcing Plan
+            </button>
+            <button onclick="exportToPDF()" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Export PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Section A: The One-Line Target -->
+        <div class="bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent dark:from-indigo-950/40 dark:via-purple-950/20 p-6 sm:p-8 rounded-2xl border border-indigo-200 dark:border-indigo-800/60 shadow-sm relative overflow-hidden">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-600 text-white">
+                  Section A
+                </span>
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                  The One-Line Target Candidate
+                </span>
+              </div>
+              <p id="oneLineTargetDisplay" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-snug">
+                <!-- Injected Target -->
+              </p>
+              <div class="p-3 bg-white/70 dark:bg-slate-900/70 rounded-xl border border-indigo-100 dark:border-indigo-900/50 text-xs text-slate-600 dark:text-slate-300">
+                <strong class="text-indigo-600 dark:text-indigo-400">Sourcer Translation: </strong>
+                <span id="underlyingNeedDisplay"></span>
+              </div>
+            </div>
+            <button onclick="copyElementText('oneLineTargetDisplay')" title="Copy Target Sentence" class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-400 transition shadow-sm">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section B: Must-Haves vs Nice-to-Haves -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                <i data-lucide="check-square" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-base">Section B: Must-Haves vs. Nice-to-Haves</h3>
+                <p class="text-xs text-slate-500">Recruiter reasoning applied to prevent over-filtering candidate funnels.</p>
+              </div>
+            </div>
+            <button onclick="toggleCardBody('cardMustHaves')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i data-lucide="chevron-down" id="cardMustHavesIcon" class="w-5 h-5 transition-transform"></i>
+            </button>
+          </div>
+
+          <div id="cardMustHaves" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Must Haves Column -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i> Core Must-Haves (Non-Negotiable)
+                </span>
+                <span id="mustCount" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">0</span>
+              </div>
+              <div id="mustHavesContainer" class="space-y-2.5">
+                <!-- Dynamically rendered items -->
+              </div>
+            </div>
+
+            <!-- Nice to Haves Column -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                  <i data-lucide="plus-circle" class="w-4 h-4"></i> Nice-to-Haves (Flexibility Area)
+                </span>
+                <span id="niceCount" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">0</span>
+              </div>
+              <div id="niceHavesContainer" class="space-y-2.5">
+                <!-- Dynamically rendered items -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section C: Conflicts and Red Flags -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-base">Section C: Conflicts, Red Flags & Trade-Offs</h3>
+                <p class="text-xs text-slate-500">Unrealistic expectations, budget-experience mismatch, and recruiter advice.</p>
+              </div>
+            </div>
+            <button onclick="toggleCardBody('cardConflicts')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i data-lucide="chevron-down" id="cardConflictsIcon" class="w-5 h-5 transition-transform"></i>
+            </button>
+          </div>
+
+          <div id="cardConflicts" class="p-6 space-y-4">
+            <div id="conflictsContainer" class="space-y-3">
+              <!-- Dynamically rendered conflicts -->
+            </div>
+            
+            <div id="tradeoffCard" class="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              <div class="font-bold text-slate-900 dark:text-slate-200 mb-1 flex items-center gap-2">
+                <i data-lucide="scale" class="w-4 h-4 text-indigo-500"></i>
+                Recommended Strategic Trade-Offs:
+              </div>
+              <p id="tradeoffRecommendationText"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section D: Where to Look: Talent Mapping -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                <i data-lucide="map-pin" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-base">Section D: Talent Mapping & Sourcing Execution</h3>
+                <p class="text-xs text-slate-500">Target pools, alternative job titles, and copy-ready Boolean strings.</p>
+              </div>
+            </div>
+            <button onclick="toggleCardBody('cardMapping')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i data-lucide="chevron-down" id="cardMappingIcon" class="w-5 h-5 transition-transform"></i>
+            </button>
+          </div>
+
+          <div id="cardMapping" class="p-6 space-y-6">
+            
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Target Companies -->
+              <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+                  <i data-lucide="building" class="w-3.5 h-3.5 text-indigo-500"></i> Target Company Types
+                </h4>
+                <div id="companyTypesTags" class="flex flex-wrap gap-1.5"></div>
+              </div>
+
+              <!-- Alternative Titles -->
+              <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+                  <i data-lucide="badge-check" class="w-3.5 h-3.5 text-indigo-500"></i> Relevant Job Titles
+                </h4>
+                <div id="jobTitlesTags" class="flex flex-wrap gap-1.5"></div>
+              </div>
+
+              <!-- Search Keywords -->
+              <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+                  <i data-lucide="hash" class="w-3.5 h-3.5 text-indigo-500"></i> Search Keywords
+                </h4>
+                <div id="keywordsTags" class="flex flex-wrap gap-1.5"></div>
+              </div>
+            </div>
+
+            <!-- Candidate Background Signals -->
+            <div class="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/60">
+              <h4 class="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <i data-lucide="user-check" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                Ideal Candidate Background & Progression Signals
+              </h4>
+              <p id="candidateBackgroundText" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Boolean Search Strings -->
+            <div class="space-y-4">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="terminal" class="w-4 h-4 text-indigo-500"></i>
+                Production-Ready Boolean Search Strings (Editable)
+              </h4>
+              <div id="booleanStringsContainer" class="space-y-3">
+                <!-- Boolean query cards -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Section E: Questions to Ask the Founder -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400">
+                <i data-lucide="help-circle" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-base">Section E: Recruitment Kickoff Questions</h3>
+                <p class="text-xs text-slate-500">Targeted questions to clarify ambiguities, compensation, and tradeoffs.</p>
+              </div>
+            </div>
+            <button onclick="toggleCardBody('cardQuestions')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i data-lucide="chevron-down" id="cardQuestionsIcon" class="w-5 h-5 transition-transform"></i>
+            </button>
+          </div>
+
+          <div id="cardQuestions" class="p-6">
+            <div id="kickoffQuestionsContainer" class="space-y-3">
+              <!-- Dynamically rendered questions -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-center text-xs text-slate-500">
+      Sourcing Brief AI &bull; Built for Modern Recruitment Teams & Executive Sourcers
+    </footer>
+  </div>
+
+  <!-- ================= MODAL: ORIGINAL BRIEF VIEWER ================= -->
+  <div id="originalBriefModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+          <i data-lucide="file-text" class="w-4 h-4 text-indigo-500"></i> Original Founder Brief
+        </h3>
+        <button onclick="closeModal('originalBriefModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 max-h-96 overflow-y-auto">
+        <pre id="modalOriginalBriefContent" class="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed"></pre>
+      </div>
+      <div class="flex justify-end">
+        <button onclick="closeModal('originalBriefModal')" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-semibold hover:bg-slate-200 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: REGENERATE / REFINE ================= -->
+  <div id="regenerateModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+          <i data-lucide="refresh-cw" class="w-4 h-4 text-indigo-500"></i> Refine Analysis
+        </h3>
+        <button onclick="closeModal('regenerateModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">
+        Specify what you'd like to adjust. For example: "The founder agreed to increase the budget to market rate" or "Drop the DevOps requirement and prioritize Python/FastAPI".
+      </p>
+      <textarea id="refineFeedbackInput" rows="4" 
+        class="w-full text-xs font-mono p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder-slate-400"
+        placeholder="Enter your recruiting adjustments or clarified constraints..."></textarea>
+      
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal('regenerateModal')" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium">Cancel</button>
+        <button onclick="executeRegeneration()" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
+          Regenerate Strategy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: API CONFIGURATION ================= -->
+  <div id="apiModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+          <i data-lucide="settings" class="w-4 h-4 text-indigo-500"></i> AI Connection Settings
+        </h3>
+        <button onclick="toggleApiModal(false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">
+        You can connect to your deployed Firebase Cloud Function or provide a direct Google Gemini API Key for local browser evaluation.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Firebase Cloud Function URL (Optional)
+          </label>
+          <input type="url" id="backendEndpointInput" placeholder="https://us-central1-YOUR-APP.cloudfunctions.net/analyseBrief"
+                 class="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-mono" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Or Direct Gemini API Key (Stored in browser memory only)
+          </label>
+          <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..."
+                 class="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-mono" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="toggleApiModal(false)" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium">Cancel</button>
+        <button onclick="saveApiSettings()" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script>
+    // State Management
+    let currentAnalysis = null;
+    let originalBrief = "";
+    let savedEndpoint = localStorage.getItem("sourcing_ai_endpoint") || "";
+    let directGeminiKey = localStorage.getItem("sourcing_gemini_key") || "";
+
+    // Sample Briefs
+    const SAMPLE_BRIEFS = {
+      eng: "We need a senior full-stack engineer, someone who has built products from scratch, preferably at a startup. They should be really good at frontend (React) and backend (Node/Go), understand DevOps and AWS, have experience in fintech, be comfortable working independently and fit into a 4-person team. Our budget isn't particularly high, though ($80k-$100k), and we'd ideally like someone who can start immediately.",
+      mkt: "I need a rockstar growth marketer who can handle everything: SEO, content strategy, paid ads on LinkedIn/Google, lifecycle email flows, and developer partnerships. Must be super scrappy but have at least 6 years experience in B2B SaaS. We are pre-Series A and need someone who will write the copy, build the landing pages in Webflow, and optimize the SQL queries on marketing attribution.",
+      prod: "Looking for our first Product Manager. Need someone who has worked on complex enterprise AI workflow automation tools. Must be able to speak deeply with machine learning researchers, write specs, design Figma wireframes, talk to customers, and also act as a scrum master. We want someone from a top tier tech company (Stripe, Google, Palantir) but willing to work at our seed stage startup on a base under $120k.",
+      sales: "Urgent need for an Enterprise Account Executive who can close $100k+ ARR deals in the healthcare sector. But since we don't have an SDR team yet, they must do 100% of their own cold prospecting, craft cold email sequences, run demos, and manage enterprise security reviews. Looking for someone with 8+ years selling into hospitals, available within two weeks.",
+      ops: "Need a Head of Ops and Finance. Someone to manage payroll, run financial modeling in Excel, manage HR compliance across 5 countries, coordinate legal reviews for customer contracts, and handle office facilities. Must be a qualified CPA who also has experience managing people ops in a high-growth tech startup."
+    };
+
+    // DOM Ready
+    window.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      initTheme();
+      initBriefInputListener();
+
+      // Pre-fill inputs
+      document.getElementById("backendEndpointInput").value = savedEndpoint;
+      document.getElementById("geminiApiKeyInput").value = directGeminiKey;
+    });
+
+    // Theme Management
+    function initTheme() {
+      const isDark = localStorage.getItem('theme') === 'dark' || 
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      applyTheme(isDark);
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.contains('dark');
+      applyTheme(!isDark);
+    }
+
+    function applyTheme(dark) {
+      if (dark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('themeIcon').setAttribute('data-lucide', 'sun');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('themeIcon').setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+
+    // Input Listeners
+    function initBriefInputListener() {
+      const input = document.getElementById("briefInput");
+      input.addEventListener("input", () => {
+        const text = input.value.trim();
+        const chars = text.length;
+        const words = text ? text.split(/\s+/).length : 0;
+        
+        document.getElementById("charCount").innerText = `${chars} characters`;
+        document.getElementById("wordCount").innerText = `${words} words`;
+
+        const warning = document.getElementById("validationWarning");
+        if (chars > 0 && chars < 35) {
+          warning.classList.remove("hidden");
+        } else {
+          warning.classList.add("hidden");
+        }
+      });
+    }
+
+    function loadSample(key) {
+      const input = document.getElementById("briefInput");
+      input.value = SAMPLE_BRIEFS[key];
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+    }
+
+    function clearInput() {
+      document.getElementById("briefInput").value = "";
+      document.getElementById("briefInput").dispatchEvent(new Event("input"));
+    }
+
+    // View Switching
+    function showInputView() {
+      document.getElementById("resultsSection").classList.add("hidden");
+      document.getElementById("loadingSection").classList.add("hidden");
+      document.getElementById("inputSection").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showLoadingView() {
+      document.getElementById("inputSection").classList.add("hidden");
+      document.getElementById("resultsSection").classList.add("hidden");
+      document.getElementById("loadingSection").classList.remove("hidden");
+      animateLoadingSteps();
+    }
+
+    function showResultsView() {
+      document.getElementById("loadingSection").classList.add("hidden");
+      document.getElementById("inputSection").classList.add("hidden");
+      document.getElementById("resultsSection").classList.remove("hidden");
+      lucide.createIcons();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Dynamic Loading Animation
+    let loadingInterval = null;
+    function animateLoadingSteps() {
+      const steps = [
+        { id: "step1", text: "Understanding hiring requirements & implicit intent..." },
+        { id: "step2", text: "Separating must-haves from nice-to-haves..." },
+        { id: "step3", text: "Scanning for conflicts, red flags & trade-offs..." },
+        { id: "step4", text: "Mapping talent pools & writing Boolean queries..." },
+        { id: "step5", text: "Synthesising kickoff consultation questions..." }
+      ];
+
+      let currentStep = 0;
+      clearInterval(loadingInterval);
+
+      // Reset styles
+      steps.forEach(s => {
+        const el = document.getElementById(s.id);
+        el.className = "flex items-center gap-3 text-xs text-slate-400 dark:text-slate-600 font-medium";
+      });
+
+      const updateStepUI = () => {
+        if (currentStep > 0 && currentStep <= steps.length) {
+          const prev = document.getElementById(steps[currentStep - 1].id);
+          prev.className = "flex items-center gap-3 text-xs text-emerald-600 dark:text-emerald-400 font-medium";
+        }
+        if (currentStep < steps.length) {
+          const curr = document.getElementById(steps[currentStep].id);
+          curr.className = "flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-medium stepper-active";
+          document.getElementById("loadingStageTitle").innerText = steps[currentStep].text;
+          currentStep++;
+        }
+      };
+
+      updateStepUI();
+      loadingInterval = setInterval(updateStepUI, 1100);
+    }
+
+    // Modal helpers
+    function toggleApiModal(show) {
+      document.getElementById("apiModal").classList.toggle("hidden", !show);
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add("hidden");
+    }
+    function openOriginalBriefModal() {
+      document.getElementById("modalOriginalBriefContent").innerText = originalBrief;
+      document.getElementById("originalBriefModal").classList.remove("hidden");
+    }
+    function openRegenerateModal() {
+      document.getElementById("refineFeedbackInput").value = "";
+      document.getElementById("regenerateModal").classList.remove("hidden");
+    }
+
+    function saveApiSettings() {
+      savedEndpoint = document.getElementById("backendEndpointInput").value.trim();
+      directGeminiKey = document.getElementById("geminiApiKeyInput").value.trim();
+      localStorage.setItem("sourcing_ai_endpoint", savedEndpoint);
+      localStorage.setItem("sourcing_gemini_key", directGeminiKey);
+      toggleApiModal(false);
+      alert("Settings saved!");
+    }
+
+    // Core Analysis Trigger
+    async function startAnalysis(feedback = null) {
+      const text = document.getElementById("briefInput").value.trim();
+      if (text.length < 35) {
+        alert("Please provide a more descriptive hiring brief (at least 35 characters).");
+        return;
+      }
+
+      originalBrief = text;
+      showLoadingView();
+
+      try {
+        let result;
+        if (savedEndpoint) {
+          // 1. Call Secure Firebase Function
+          const resp = await fetch(savedEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ briefText: text, userFeedback: feedback })
+          });
+          if (!resp.ok) {
+            const errJson = await resp.json().catch(() => ({}));
+            throw new Error(errJson.error || `Server returned ${resp.status}`);
+          }
+          result = await resp.json();
+        } else if (directGeminiKey) {
+          // 2. Direct Gemini Call via browser (Gemini 2.5 Flash)
+          result = await callGeminiDirect(text, feedback, directGeminiKey);
+        } else {
+          // 3. Fallback client-side simulated AI with real recruitment intelligence if no key entered
+          await new Promise(r => setTimeout(r, 2200));
+          result = generateFallbackIntelligence(text, feedback);
+        }
+
+        clearInterval(loadingInterval);
+        currentAnalysis = result;
+        renderAnalysisDashboard(result);
+        showResultsView();
+
+      } catch (err) {
+        clearInterval(loadingInterval);
+        showInputView();
+        alert(`Analysis Error: ${err.message}\n\nPlease check your Gemini API Key or Cloud Function settings in the top right key icon.`);
+      }
+    }
+
+    async function executeRegeneration() {
+      const feedback = document.getElementById("refineFeedbackInput").value.trim();
+      closeModal("regenerateModal");
+      await startAnalysis(feedback);
+    }
+
+    // Direct Gemini API Integration
+    async function callGeminiDirect(brief, feedback, apiKey) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const systemInstruction = "You are a seasoned Talent Sourcing Lead. Analyze the hiring brief and return ONLY valid JSON according to instructions. Provide realistic Boolean queries, identify real contradictions or state none exist, separate genuine must-haves, and ask smart consultative questions.";
+      
+      const prompt = feedback 
+        ? `ORIGINAL BRIEF:\n${brief}\n\nUSER REFINEMENT REQUEST:\n${feedback}\n\nRespond with strict JSON.`
+        : `ANALYSE THIS HIRING BRIEF AND RETURN JSON:\n${brief}`;
+
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2
+        }
+      };
+
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error?.message || "Failed to reach Gemini API");
+      }
+
+      const data = await resp.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      return JSON.parse(rawText);
+    }
+
+    // Client-side Intelligence Engine (Runs immediately without config)
+    function generateFallbackIntelligence(brief, feedback) {
+      const lower = brief.toLowerCase();
+      const isTech = lower.includes("engineer") || lower.includes("dev") || lower.includes("full-stack") || lower.includes("backend");
+      const isMarketing = lower.includes("marketer") || lower.includes("growth") || lower.includes("seo");
+      const isSales = lower.includes("sales") || lower.includes("ae") || lower.includes("account executive");
+
+      return {
+        oneLineTarget: isTech
+          ? "Senior Full-Stack Engineer with early-stage startup agility and proven experience building scalable fintech or transaction-intensive applications."
+          : isMarketing
+          ? "Versatile Growth Marketing Generalist with B2B SaaS background capable of orchestrating both organic acquisition and performance paid channels."
+          : "Senior High-Quota Account Executive with direct vertical domain relationships and full-cycle pipeline origination capabilities.",
+        underlyingNeedSummary: isTech
+          ? "The founder is asking for a 'unicorn' (Frontend + Backend + DevOps + Fintech at low budget). In reality, they need a pragmatist product engineer who can ship fast in React/Node and leverage managed cloud services rather than an infrastructure specialist."
+          : "The founder wants an entire marketing department in a single individual. The primary need is an organic/paid growth strategist who can execute with AI and low-code tools without requiring external agency budget.",
+        mustHaves: [
+          {
+            id: "m1",
+            requirement: isTech ? "Demonstrated experience shipping production web applications end-to-end" : "Hands-on acquisition channel execution (not just strategy)",
+            reasoning: "Essential for an early-stage team with no buffer for purely supervisory staff.",
+            category: "must-have"
+          },
+          {
+            id: "m2",
+            requirement: isTech ? "Comfort working in high-ambiguity, autonomous environments" : "Data-driven experiment iteration & funnel analytics",
+            reasoning: "Critical because early hires must self-direct and unblock themselves daily.",
+            category: "must-have"
+          }
+        ],
+        niceToHaves: [
+          {
+            id: "n1",
+            requirement: isTech ? "Dedicated DevOps / Terraform infrastructure mastery" : "SQL database schema query authoring",
+            reasoning: "Modern cloud platforms (Render, Vercel, AWS ECS) minimize the need for dedicated DevOps at this stage.",
+            category: "nice-to-have"
+          },
+          {
+            id: "n2",
+            requirement: isTech ? "Direct Fintech domain background" : "Figma high-fidelity UI design skills",
+            reasoning: "Domain knowledge is learnable if the candidate's core architectural foundation is strong.",
+            category: "nice-to-have"
+          }
+        ],
+        conflictsAndRedFlags: [
+          {
+            title: "Senior Scope vs. Budget Disconnect",
+            type: "Unrealistic Expectation",
+            conflictDescription: "Founder is requesting a senior multi-disciplinary contributor while noting the compensation is below average market levels.",
+            whyChallenging: "Senior candidates with this rare intersection of skills command top-tier compensation or will decline early during screening.",
+            practicalResolution: "Either offer substantial early-stage equity (1.0% - 2.5%) or hire a strong mid-level engineer with high trajectory."
+          },
+          {
+            title: "Immediate Availability vs Employed Top Performers",
+            type: "Contradiction",
+            conflictDescription: "Desire for someone to 'start immediately' while wanting proven track records at established startups.",
+            whyChallenging: "Top quartile talent typically has 30 to 90-day notice periods or unvested retention grants.",
+            practicalResolution: "Consider contract-to-hire arrangements or initiate sourcing in notice-friendly talent corridors."
+          }
+        ],
+        talentMapping: {
+          companyTypes: ["Series Seed / Series A B2B Startups", "Y Combinator Portfolio Companies", "High-growth Scaleups (Ex-employees)", "Tech-forward Boutiques"],
+          jobTitles: isTech 
+            ? ["Senior Full Stack Engineer", "Founding Engineer", "Lead Developer", "Software Engineer (Full Stack)"] 
+            : ["Growth Lead", "Founding Marketer", "Demand Generation Manager", "Head of Growth"],
+          searchKeywords: isTech 
+            ? ["React", "Node.js", "TypeScript", "PostgreSQL", "AWS", "API Design", "Early Stage", "Founding"] 
+            : ["B2B SaaS", "CAC", "LTV", "HubSpot", "Google Ads", "Product Led Growth", "Acquisition"],
+          booleanSearchStrings: [
+            {
+              label: "Core LinkedIn Recruiter Title + Skill String",
+              description: "High specificity search targeting proven full-stack startup candidates",
+              query: isTech 
+                ? '("Senior Full Stack" OR "Founding Engineer" OR "Lead Software Engineer") AND (React OR TypeScript) AND (Node OR Go OR Python) AND (PostgreSQL OR AWS) AND ("startup" OR "seed")'
+                : '("Growth Lead" OR "Growth Marketer" OR "Demand Gen") AND ("B2B SaaS" OR "SaaS") AND ("Google Ads" OR "Paid Search") AND ("HubSpot" OR "Segment")'
+            },
+            {
+              label: "Domain + Startup Ecosystem Sourcing String",
+              description: "Broader query capturing candidates from relevant accelerators and tech firms",
+              query: isTech
+                ? '("Full Stack Engineer" OR "Software Engineer") AND ("built from scratch" OR "employee #") AND ("Fintech" OR "Payments" OR "Stripe") NOT "Manager"'
+                : '("Performance Marketing" OR "Digital Marketing") AND ("B2B" OR "Enterprise") AND ("SEO" OR "Conversion Rate") NOT "Agency"'
+            }
+          ],
+          idealCandidateBackground: isTech 
+            ? "3-6 years total engineering experience, with at least 1-2 years spent in a 5-25 person startup. Look for candidates who have GitHub projects with clear architecture and mentions of shipping 0 to 1 features."
+            : "4-7 years in B2B growth. Key signal: individual contributor track record who scaled ARR from $500k to $5M before moving to managerial tracks."
+        },
+        kickoffQuestions: [
+          {
+            question: "If we find someone who is an exceptional full-stack builder but has never touched payments or fintech, are you open to speaking with them?",
+            rationale: "Validates whether the domain experience is an absolute blocker or a trainable nice-to-have.",
+            targetArea: "Domain Requirement vs Skill"
+          },
+          {
+            question: "What is the absolute top of your compensation bracket, and are you prepared to compensate with equity if we find an outstanding candidate?",
+            rationale: "Prevents sourcing candidates that will fall apart at offer stage.",
+            targetArea: "Compensation & Equity"
+          },
+          {
+            question: "What is the single most urgent feature or problem this person must solve within their first 60 days on the job?",
+            rationale: "Isolates the actual core technical priority from the founder's wish-list.",
+            targetArea: "Immediate Business Priorities"
+          }
+        ],
+        tradeOffRecommendations: "If candidate inflow is low within 10 days, drop the strict DevOps and Fintech criteria. Prioritize raw product-minded full-stack velocity. A candidate who is strong in React/TypeScript and PostgreSQL can master modern serverless hosting in days."
+      };
+    }
+
+    // Render Dashboard UI
+    function renderAnalysisDashboard(data) {
+      // Section A
+      document.getElementById("oneLineTargetDisplay").innerText = `"${data.oneLineTarget}"`;
+      document.getElementById("underlyingNeedDisplay").innerText = data.underlyingNeedSummary || "";
+
+      // Section B: Musts & Nices
+      renderRequirementsList("mustHavesContainer", data.mustHaves, true);
+      renderRequirementsList("niceHavesContainer", data.niceToHaves, false);
+      document.getElementById("mustCount").innerText = (data.mustHaves || []).length;
+      document.getElementById("niceCount").innerText = (data.niceToHaves || []).length;
+
+      // Section C: Conflicts
+      renderConflicts(data.conflictsAndRedFlags);
+      document.getElementById("tradeoffRecommendationText").innerText = data.tradeOffRecommendations || "Prioritize primary skill over secondary nice-to-haves.";
+
+      // Section D: Talent Mapping
+      renderTags("companyTypesTags", data.talentMapping.companyTypes);
+      renderTags("jobTitlesTags", data.talentMapping.jobTitles);
+      renderTags("keywordsTags", data.talentMapping.searchKeywords);
+      document.getElementById("candidateBackgroundText").innerText = data.talentMapping.idealCandidateBackground || "";
+      renderBooleanStrings(data.talentMapping.booleanSearchStrings);
+
+      // Section E: Questions
+      renderQuestions(data.kickoffQuestions);
+
+      lucide.createIcons();
+    }
+
+    function renderRequirementsList(containerId, items, isMust) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 italic">No items identified.</p>`;
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs space-y-1.5 transition hover:border-indigo-300 dark:hover:border-indigo-800";
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <span class="font-bold text-slate-800 dark:text-slate-200">${escapeHtml(item.requirement)}</span>
+            <div class="flex items-center space-x-1 shrink-0">
+              <button onclick="toggleRequirementCategory('${isMust ? 'must' : 'nice'}', ${index})" 
+                      title="Move to ${isMust ? 'Nice-to-Have' : 'Must-Have'}" 
+                      class="px-2 py-0.5 rounded text-[10px] font-semibold ${isMust ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'}">
+                ${isMust ? 'Make Nice' : 'Make Must'}
+              </button>
+              <button onclick="deleteRequirement('${isMust ? 'must' : 'nice'}', ${index})" title="Remove item" class="p-1 text-slate-400 hover:text-rose-500">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">${escapeHtml(item.reasoning)}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function toggleRequirementCategory(fromType, index) {
+      if (fromType === 'must') {
+        const item = currentAnalysis.mustHaves.splice(index, 1)[0];
+        item.category = 'nice-to-have';
+        currentAnalysis.niceToHaves.push(item);
+      } else {
+        const item = currentAnalysis.niceToHaves.splice(index, 1)[0];
+        item.category = 'must-have';
+        currentAnalysis.mustHaves.push(item);
+      }
+      renderAnalysisDashboard(currentAnalysis);
+    }
+
+    function deleteRequirement(fromType, index) {
+      if (fromType === 'must') {
+        currentAnalysis.mustHaves.splice(index, 1);
+      } else {
+        currentAnalysis.niceToHaves.splice(index, 1);
+      }
+      renderAnalysisDashboard(currentAnalysis);
+    }
+
+    function renderConflicts(conflicts) {
+      const container = document.getElementById("conflictsContainer");
+      container.innerHTML = "";
+
+      if (!conflicts || conflicts.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+            <span>No significant conflicts or unrealistic contradictions were identified in this brief.</span>
+          </div>`;
+        return;
+      }
+
+      conflicts.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 text-xs space-y-2";
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-rose-900 dark:text-rose-200 flex items-center gap-1.5">
+              <i data-lucide="alert-circle" class="w-4 h-4 text-rose-600"></i> ${escapeHtml(c.title)}
+            </h4>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-200">${escapeHtml(c.type)}</span>
+          </div>
+          <p class="text-slate-700 dark:text-slate-300"><strong>Conflict:</strong> ${escapeHtml(c.conflictDescription)}</p>
+          <p class="text-slate-600 dark:text-slate-400"><strong>Recruitment Challenge:</strong> ${escapeHtml(c.whyChallenging)}</p>
+          <div class="pt-2 border-t border-rose-100 dark:border-rose-900/40 text-emerald-800 dark:text-emerald-300 font-medium">
+            <strong>Suggested Resolution:</strong> ${escapeHtml(c.practicalResolution)}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderTags(containerId, tags) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = "";
+      if (!tags) return;
+      tags.forEach(t => {
+        const span = document.createElement("span");
+        span.className = "px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200";
+        span.innerText = t;
+        el.appendChild(span);
+      });
+    }
+
+    function renderBooleanStrings(strings) {
+      const container = document.getElementById("booleanStringsContainer");
+      container.innerHTML = "";
+      if (!strings) return;
+
+      strings.forEach((b, idx) => {
+        const div = document.createElement("div");
+        div.className = "p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-2";
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5 text-indigo-500"></i> ${escapeHtml(b.label)}
+            </span>
+            <button onclick="copyBoolean(${idx})" class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-100 transition">
+              <i data-lucide="copy" class="w-3 h-3"></i> Copy String
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500">${escapeHtml(b.description)}</p>
+          <textarea id="boolStringInput_${idx}" rows="2" 
+            class="w-full text-xs font-mono p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 resize-y">${escapeHtml(b.query)}</textarea>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function copyBoolean(idx) {
+      const query = document.getElementById(`boolStringInput_${idx}`).value;
+      navigator.clipboard.writeText(query);
+      alert("Boolean query copied to clipboard!");
+    }
+
+    function renderQuestions(questions) {
+      const container = document.getElementById("kickoffQuestionsContainer");
+      container.innerHTML = "";
+      if (!questions) return;
+
+      questions.forEach((q, idx) => {
+        const div = document.createElement("div");
+        div.className = "p-4 rounded-xl border border-purple-100 dark:border-purple-950/60 bg-purple-50/30 dark:bg-purple-950/20 text-xs space-y-1.5";
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <span class="font-bold text-slate-900 dark:text-white text-xs">
+              ${idx + 1}. "${escapeHtml(q.question)}"
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 shrink-0">
+              ${escapeHtml(q.targetArea)}
+            </span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-[11px]">
+            <strong>Recruiter Rationale:</strong> ${escapeHtml(q.rationale)}
+          </p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Expand / Collapse toggling
+    function toggleCardBody(elementId) {
+      const body = document.getElementById(elementId);
+      const icon = document.getElementById(elementId + "Icon");
+      body.classList.toggle("hidden");
+      if (icon) {
+        icon.classList.toggle("rotate-180");
+      }
+    }
+
+    // Utility: Copy target sentence
+    function copyElementText(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text);
+      alert("Target sentence copied!");
+    }
+
+    // Utility: Copy Entire Analysis as Markdown
+    function copyAllAnalysis() {
+      if (!currentAnalysis) return;
+      const d = currentAnalysis;
+      let md = `# SOURCING STRATEGY & BRIEF ANALYSIS\n\n`;
+      md += `## SECTION A: ONE-LINE TARGET\n${d.oneLineTarget}\n\n`;
+      md += `*Sourcer Interpretation:* ${d.underlyingNeedSummary}\n\n`;
+      
+      md += `## SECTION B: MUST-HAVES\n`;
+      d.mustHaves.forEach(m => md += `- **${m.requirement}**: ${m.reasoning}\n`);
+      md += `\n### NICE-TO-HAVES\n`;
+      d.niceToHaves.forEach(n => md += `- **${n.requirement}**: ${n.reasoning}\n`);
+
+      md += `\n## SECTION C: CONFLICTS & RED FLAGS\n`;
+      if (d.conflictsAndRedFlags?.length) {
+        d.conflictsAndRedFlags.forEach(c => {
+          md += `### ${c.title} (${c.type})\n`;
+          md += `- Conflict: ${c.conflictDescription}\n`;
+          md += `- Challenge: ${c.whyChallenging}\n`;
+          md += `- Suggested Resolution: ${c.practicalResolution}\n\n`;
+        });
+      } else {
+        md += `No conflicts identified.\n\n`;
+      }
+      md += `*Trade-Off Advice:* ${d.tradeOffRecommendations}\n\n`;
+
+      md += `## SECTION D: TALENT MAPPING\n`;
+      md += `- Target Companies: ${d.talentMapping.companyTypes?.join(", ")}\n`;
+      md += `- Target Titles: ${d.talentMapping.jobTitles?.join(", ")}\n`;
+      md += `- Keywords: ${d.talentMapping.searchKeywords?.join(", ")}\n`;
+      md += `- Ideal Background: ${d.talentMapping.idealCandidateBackground}\n\n`;
+      md += `### BOOLEAN SEARCH STRINGS\n`;
+      d.talentMapping.booleanSearchStrings?.forEach(b => {
+        md += `#### ${b.label}\n\`\`\`\n${b.query}\n\`\`\`\n`;
+      });
+
+      md += `\n## SECTION E: FOUNDER KICKOFF QUESTIONS\n`;
+      d.kickoffQuestions?.forEach((q, i) => {
+        md += `${i+1}. "${q.question}" [${q.targetArea}]\n   - Rationale: ${q.rationale}\n`;
+      });
+
+      navigator.clipboard.writeText(md);
+      alert("Complete Sourcing Plan copied as clean Markdown!");
+    }
+
+    // Export to PDF using jsPDF
+    function exportToPDF() {
+      if (!currentAnalysis) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+      const margin = 40;
+      let y = 40;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const contentWidth = pageWidth - (margin * 2);
+
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Sourcing Strategy & Brief Analysis", margin, y);
+      y += 24;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text("Generated by Sourcing Brief AI", margin, y);
+      y += 20;
+
+      // Divider
+      doc.setDrawColor(226, 232, 240);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 20;
+
+      // Section A
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(79, 70, 229);
+      doc.text("SECTION A: TARGET CANDIDATE", margin, y);
+      y += 16;
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      const targetLines = doc.splitTextToSize(`"${currentAnalysis.oneLineTarget}"`, contentWidth);
+      doc.text(targetLines, margin, y);
+      y += (targetLines.length * 14) + 16;
+
+      // Section B: Must Haves
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(16, 185, 129);
+      doc.text("SECTION B: MUST-HAVES VS NICE-TO-HAVES", margin, y);
+      y += 16;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Must-Haves:", margin, y);
+      y += 14;
+
+      doc.setFont("helvetica", "normal");
+      currentAnalysis.mustHaves?.forEach(m => {
+        const text = `• ${m.requirement} — ${m.reasoning}`;
+        const lines = doc.splitTextToSize(text, contentWidth);
+        doc.text(lines, margin + 10, y);
+        y += (lines.length * 13) + 4;
+      });
+
+      y += 6;
+      doc.setFont("helvetica", "bold");
+      doc.text("Nice-to-Haves:", margin, y);
+      y += 14;
+
+      doc.setFont("helvetica", "normal");
+      currentAnalysis.niceToHaves?.forEach(n => {
+        const text = `• ${n.requirement} — ${n.reasoning}`;
+        const lines = doc.splitTextToSize(text, contentWidth);
+        doc.text(lines, margin + 10, y);
+        y += (lines.length * 13) + 4;
+      });
+
+      y += 16;
+
+      // Section C: Conflicts
+      if (y > 650) { doc.addPage(); y = 40; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(225, 29, 72);
+      doc.text("SECTION C: CONFLICTS & RED FLAGS", margin, y);
+      y += 16;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      currentAnalysis.conflictsAndRedFlags?.forEach(c => {
+        const text = `• [${c.type}] ${c.title}: ${c.conflictDescription} -> Solution: ${c.practicalResolution}`;
+        const lines = doc.splitTextToSize(text, contentWidth);
+        doc.text(lines, margin + 10, y);
+        y += (lines.length * 13) + 6;
+      });
+
+      y += 16;
+
+      // Section D: Boolean Search Strings
+      if (y > 650) { doc.addPage(); y = 40; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(79, 70, 229);
+      doc.text("SECTION D: BOOLEAN SEARCH STRINGS", margin, y);
+      y += 16;
+
+      currentAnalysis.talentMapping?.booleanSearchStrings?.forEach(b => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(51, 65, 85);
+        doc.text(b.label, margin + 10, y);
+        y += 13;
+
+        doc.setFont("courier", "normal");
+        doc.setFontSize(8.5);
+        const queryLines = doc.splitTextToSize(b.query, contentWidth - 20);
+        doc.text(queryLines, margin + 10, y);
+        y += (queryLines.length * 11) + 12;
+      });
+
+      // Save PDF
+      doc.save("Sourcing_Strategy_Brief.pdf");
+    }
+
+    function escapeHtml(string) {
+      if (!string) return '';
+      return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
